@@ -1,6 +1,8 @@
 package ar.com.ada.hoteltresvagos;
 
 import java.math.BigDecimal;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Scanner;
@@ -16,12 +18,14 @@ public class ABM {
     public static Scanner Teclado = new Scanner(System.in);
 
     protected HuespedManager ABMHuesped = new HuespedManager();
+    protected ReservaManager ABMReserva = new ReservaManager();
 
     public void iniciar() throws Exception {
 
         try {
 
             ABMHuesped.setup();
+            ABMReserva.setup();
 
             printOpciones();
 
@@ -29,6 +33,12 @@ public class ABM {
             Teclado.nextLine();
 
             while (opcion > 0) {
+
+                if (opcion == 1) {
+
+                    printOpcionHuesped();
+                    opcion = Teclado.nextInt();
+                    Teclado.nextLine();
 
                 switch (opcion) {
                     case 1:
@@ -60,6 +70,39 @@ public class ABM {
                         System.out.println("La opcion no es correcta.");
                         break;
                 }
+                
+            } else if (opcion == 2) {
+
+                printOpcionReserva();
+                opcion = Teclado.nextInt();
+                Teclado.nextLine();
+
+                switch (opcion) {
+                    case 1:
+                        altaReserva();
+                        break;
+
+                    case 2:
+                        bajaReserva();
+                        break;
+
+                    case 3:
+                        modificarReserva();
+                        break;
+
+                    case 4:
+                        listarReservas();
+                        break;
+
+                    case 5:
+                        listarPorNombreHuesped();
+                        break;
+
+                    default:
+                        System.out.println("La opcion no es correcta.");
+                        break;
+                }
+            }
 
                 printOpciones();
 
@@ -71,7 +114,6 @@ public class ABM {
             ABMHuesped.exit();
 
         } catch (Exception e) {
-            // TODO: handle exception
             System.out.println("Que lindo mi sistema,se rompio mi sistema");
             throw e;
         } finally {
@@ -98,7 +140,43 @@ public class ABM {
         if (domAlternativo != null)
             huesped.setDomicilioAlternativo(domAlternativo);
 
-        
+        // vamos a generar una reserva.
+        Reserva reserva = new Reserva();
+
+        BigDecimal importeReserva = new BigDecimal(1000);
+        reserva.setImporteReserva(importeReserva); // Forma 1
+        // importeReserva.add(new BigDecimal(20));
+        reserva.setImporteTotal(new BigDecimal(3000)); // forma 2
+        reserva.setImportePagado(new BigDecimal(0));
+        reserva.setFechaReserva(new Date()); // fecha actual
+
+        System.out.println("ingrese la fecha de ingreso(dd/mm/yy)");
+
+        Date fechaIngreso = null;
+        Date fechaEgreso = null;
+
+        DateFormat dFormat = new SimpleDateFormat("dd/MM/yy");
+
+        // Alternativa de leer fecha con try catch
+        try {
+            fechaIngreso = dFormat.parse(Teclado.nextLine());
+
+        } catch (Exception ex) {
+            System.out.println("Ingrese una fecha invalida");
+            System.out.println("Vuelva a empezar");
+            return;
+        }
+
+        // Alternativa de leer a los golpes(puede tirar una exception)
+        System.out.println("Ingrese la fecha de egreso(dd/mm/yy)");
+        fechaEgreso = dFormat.parse(Teclado.nextLine());
+
+        reserva.setFechaIngreso(fechaIngreso);
+        reserva.setFechaEgreso(fechaEgreso); // por ahora 1 dia
+        reserva.setTipoEstadoId(20); // en el caso. 20 significa pagado
+        reserva.setHuesped(huesped); // esta es la relacion bidirecional
+
+        // Actualizo todos los objeto
         ABMHuesped.create(huesped);
 
         /*
@@ -235,9 +313,8 @@ public class ABM {
 
     public void mostrarHuesped(Huesped huesped) {
 
-        System.out.print("Id: " + huesped.getHuespedId() + " Nombre: " + huesped.getNombre()
-        + " DNI: " + huesped.getDni()
-        + " Domicilio: " + huesped.getDomicilio());
+        System.out.print("Id: " + huesped.getHuespedId() + " Nombre: " + huesped.getNombre() + " DNI: "
+                + huesped.getDni() + " Domicilio: " + huesped.getDomicilio());
 
         if (huesped.getDomicilioAlternativo() != null)
             System.out.println(" Alternativo: " + huesped.getDomicilioAlternativo());
@@ -245,15 +322,143 @@ public class ABM {
             System.out.println();
     }
 
+    // metodos de RESERVA
+
+    public void altaReserva() throws Exception {
+        System.out.println("-- ALTA DE RESERVACIÓN --");
+
+        System.out.println("Introducir el DNI del huésped: ");
+        int dni = Teclado.nextInt();
+        Teclado.nextLine();
+        Huesped huesped = ABMHuesped.readByDNI(dni);
+
+        if (huesped == null) {
+
+            System.out.println("No existe");
+            return;
+        }
+
+        Reserva reserva = new Reserva();
+        reserva.setHuesped(huesped);
+        reserva.setFechaReserva(new Date());
+
+        System.out.println("ingrese la fecha de ingreso(dd/mm/yy)");
+
+        Date fechaIngreso = null;
+        Date fechaEgreso = null;
+
+        DateFormat dFormat = new SimpleDateFormat("dd/MM/yy");
+
+        try {
+            fechaIngreso = dFormat.parse(Teclado.nextLine());
+            reserva.setFechaReserva(fechaIngreso);
+            // reserva.setFechaIngreso(dFormat.parse(Teclado.nextLine())); (Otra opción)
+
+        } catch (Exception ex) {
+            System.out.println("Ingrese una fecha invalida");
+            System.out.println("Vuelva a empezar");
+            return;
+        }
+
+        // Alternativa de leer a los golpes(puede tirar una exception)
+        System.out.println("Ingrese la fecha de egreso(dd/mm/yy)");
+
+        dFormat = new SimpleDateFormat("dd/MM/yy");
+        try {
+            fechaEgreso = dFormat.parse(Teclado.nextLine());
+            reserva.setFechaReserva(fechaEgreso);
+            // reserva.setFechaIngreso(dFormat.parse(Teclado.nextLine())); (Otra opción)
+
+        } catch (Exception ex) {
+            System.out.println("Ingrese una fecha invalida");
+            System.out.println("Vuelva a empezar");
+            return;
+        }
+
+        System.out.println("Ingrese número de habitación.");
+        int habitacion = Teclado.nextInt();
+        Teclado.nextLine();
+
+        System.out.println("Introducir el importe de la reserva: ");
+        BigDecimal importeReserva = Teclado.nextBigDecimal();
+        Teclado.nextLine();
+
+        System.out.println("Introducir el importe total: ");
+        BigDecimal importeTotal = Teclado.nextBigDecimal();
+        Teclado.nextLine();
+
+        System.out.println("Introducir el importe pagado: ");
+        BigDecimal importePagado = Teclado.nextBigDecimal();
+        Teclado.nextLine();
+
+        System.out.println("Ingrese el estado de pago: ");
+        // otra forma reserva.setTipoEstadoId(Teclado.nextInt());
+        int tipoEstadoId = Teclado.nextInt();
+        Teclado.nextLine();
+
+        reserva.setFechaIngreso(fechaIngreso);
+        reserva.setFechaEgreso(fechaEgreso);
+        reserva.setHabitacion(habitacion);
+        reserva.setImporteReserva(importeReserva);
+        reserva.setImporteTotal(importeTotal);
+        reserva.setImportePagado(importePagado);
+        reserva.setTipoEstadoId(tipoEstadoId);
+
+        // Actualizo todos los objeto
+        ABMReserva.create(reserva);
+        System.out.println("Reserva generada con exito.  " + reserva);
+
+    }
+
+    public void bajaReserva() {
+        System.out.println("FUNCIONA BAJA"); // TODO
+    }
+
+    public void modificarReserva() throws Exception {
+        System.out.println("FUNCIONA MODIFICA");
+    }
+
+    public void listarReservas() {
+        System.out.println("FUNCIONA LISTA");
+    }
+
+    public void listarPorNombreHuesped() {
+        System.out.println("FUNCIONA LISTA POR NOMBRE");
+    }
+
+    // PRINT OPCIONES
+
     public static void printOpciones() {
         System.out.println("=======================================");
+        System.out.println("");
+        System.out.println("Seleccione una de las siguientes opciones para continuar. \n");
+        System.out.println("1. Menú de huespedes.");
+        System.out.println("2. Menú de reservas.");
+        System.out.println("0. Para terminar.");
+        System.out.println("");
+        System.out.println("=======================================");
+    }
+
+    public static void printOpcionHuesped() {
+        System.out.println("\n MENÚ HUESPEDES \n");
         System.out.println("");
         System.out.println("1. Para agregar un huesped.");
         System.out.println("2. Para eliminar un huesped.");
         System.out.println("3. Para modificar un huesped.");
-        System.out.println("4. Para ver el listado.");
+        System.out.println("4. Para ver el listado de huespedes.");
         System.out.println("5. Buscar un huesped por nombre especifico(SQL Injection)).");
-        System.out.println("0. Para terminar.");
+        System.out.println("");
+        System.out.println("=======================================");
+    }
+
+    public static void printOpcionReserva() {
+        System.out.println("\n MENÚ RESERVAS \n");
+        System.out.println("");
+        System.out.println("1. Para agregar una reserva.");
+        System.out.println("2. Para eliminar una reserva.");
+        System.out.println("3. Para modificar una reserva.");
+        System.out.println("4. Para ver el listado de reservas.");
+        System.out.println("5. Para ver el listado de reservas de un huesped por su nombre.");
         System.out.println("");
         System.out.println("=======================================");
     }

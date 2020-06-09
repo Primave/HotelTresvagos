@@ -18,7 +18,8 @@ public class Huesped {
     private String domicilio;
     @Column(name = "domicilio_alternativo")
     private String domicilioAlternativo;
-    @OneToMany(mappedBy = "huesped", cascade = CascadeType.ALL)
+    
+    @OneToMany(mappedBy = "huesped", cascade = CascadeType.ALL, fetch = FetchType.EAGER) //Hace referencia al hesped de la reserva
     private List<Reserva> reservas = new ArrayList<>();
 
     public Huesped(String nombre) {

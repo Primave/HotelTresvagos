@@ -3,11 +3,9 @@ package ar.com.ada.hoteltresvagos.entities;
 import java.math.BigDecimal;
 import java.util.*;
 import javax.persistence.*;
-import org.hibernate.annotations.NaturalId;
-import ar.com.ada.hoteltresvagos.excepciones.*;
 
 @Entity
-@Table(name="reserva")
+@Table(name="reserva") //estas son anotaciones particulares de javax.percistence
 public class Reserva {
 
     @Id
@@ -27,11 +25,10 @@ public class Reserva {
     private BigDecimal importeTotal;
     @Column(name = "importe_pagado")
     private BigDecimal importePagado;
-    @Column(name = "tipo_estado_id")
-    private int tipoEstadoId; //por ahora
+    @Column(name = "status_id")
+    private int tipoEstadoId; //por ahora int
     @ManyToOne
     @JoinColumn(name = "huesped_id", referencedColumnName = "huesped_id")
-
     private Huesped huesped;
 
 	public int getReservaId() {
@@ -112,7 +109,20 @@ public class Reserva {
 
 	public void setHuesped(Huesped huesped) {
         this.huesped = huesped;
-        this.huesped.getReservas().add(this);
+        this.huesped.getReservas().add(this); //estabelece la relacion bidireccional
 	}
     
 }
+
+//double importe = 0
+//double importe2 = 1;
+//double importe3 = importe + importe2;
+
+//BigDecimal importe = new BigDecimal(0);
+//BigDecimal importe2 0 new BigDecimal(1);
+//BigDecimal importe3 = importe.add(importe2);
+
+//double importe = (var1 * 10 / 365) + 50 + var3*8
+
+//double importe = 10 / 3; 3.333333333333333333
+//bigdecimal: 3.33 o 3.34
