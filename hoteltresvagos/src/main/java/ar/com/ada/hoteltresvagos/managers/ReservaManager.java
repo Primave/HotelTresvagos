@@ -92,7 +92,7 @@ public class ReservaManager {
 
         /// NUNCA HARCODEAR SQLs nativos en la aplicacion.
         // ESTO es solo para nivel educativo
-        Query query = session.createNativeQuery("SELECT * FROM huesped", Reserva.class);
+        Query query = session.createNativeQuery("SELECT * FROM reserva", Reserva.class);
         //query = session.createQuery("From Obse")
         List<Reserva> todos = query.getResultList();
 
